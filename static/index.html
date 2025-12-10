@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Music Performance Analyzer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+        }
+        .plot {
+            width: 90%;
+            margin-top: 25px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Music Performance Analyzer</h1>
+<p>Upload an audio file to analyze pitch & tempo.</p>
+
+<input type="file" id="audioFile" accept="audio/*">
+<button onclick="uploadAudio()">Analyze</button>
+
+<h2>Results</h2>
+<pre id="results"></pre>
+
+<h3>Pitch (Hz)</h3>
+<img id="f0img" class="plot">
+
+<h3>Pitch Error (Cents)</h3>
+<img id="centsimg" class="plot">
+
+<h3>Local Tempo (BPM)</h3>
+<img id="bpmimg" class="plot">
+
+<script>
+async function uploadAudio() {
+    const fileInput = document.getElementById('audioFile');
+    if (!fileInput.files.length) return alert("Choose a file first!");
+
+    let formData = new FormData();
+    formData.append("file", fileInput.files[0]);
+
+    const res = await fetch("/analyze", {
+        method: "POST",
+        body: formData
+    });
+
+    const data = await res.json();
+    console.log(data);
+
+    if (data.error) {
+        document.getElementById("results").innerText = "Error: " + data.error;
+        return;
+    }
+
+    document.getElementById("results").innerText =
+        "Estimated Tempo: " + data.tempo.toFixed(1) + " BPM\n" +
+        "Tempo Variability: " + data.tempo_std.toFixed(2) + "\n" +
+        "Avg Pitch Error: " + data.avg_cents_error.toFixed(1) + " cents\n" +
+        "Median Pitch Error: " + data.median_cents_error.toFixed(1) + " cents";
+
+    document.getElementById("f0img").src = "data:image/png;base64," + data.images.f0_png_base64;
+    document.getElementById("centsimg").src = "data:image/png;base64," + data.images.cents_png_base64;
+    document.getElementById("bpmimg").src = "data:image/png;base64," + data.images.local_bpm_png_base64;
+}
+</script>
+
+</body>
+</html>

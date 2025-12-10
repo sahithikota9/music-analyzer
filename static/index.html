@@ -1,43 +1,143 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Music Performance Analyzer</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 40px;
-        }
-        .plot {
-            width: 90%;
-            margin-top: 25px;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Music Performance Analyzer</title>
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: "Inter", sans-serif;
+        background: linear-gradient(135deg, #e3f2fd, #fce4ec);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        padding-top: 40px;
+    }
+
+    .container {
+        width: 90%;
+        max-width: 900px;
+        background: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(15px);
+        padding: 30px;
+        border-radius: 25px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+        font-size: 2.4rem;
+        text-align: center;
+        margin-bottom: 20px;
+        color: #333;
+        font-weight: 700;
+    }
+
+    p {
+        text-align: center;
+        margin-bottom: 25px;
+        color: #555;
+        font-size: 1.1rem;
+    }
+
+    input[type="file"] {
+        display: none;
+    }
+
+    .file-label {
+        display: inline-block;
+        padding: 12px 22px;
+        background: #7b1fa2;
+        color: white;
+        font-weight: 600;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: 0.3s;
+        text-align: center;
+    }
+    .file-label:hover {
+        background: #6a1b9a;
+    }
+
+    button {
+        margin-left: 10px;
+        padding: 12px 24px;
+        background: #0288d1;
+        color: white;
+        font-weight: 600;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+    button:hover {
+        background: #0277bd;
+    }
+
+    #results {
+        white-space: pre-wrap;
+        background: rgba(255, 255, 255, 0.7);
+        padding: 20px;
+        border-radius: 15px;
+        margin-top: 25px;
+        font-size: 1.05rem;
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    h3 {
+        margin-top: 30px;
+        color: #444;
+        border-left: 5px solid #7b1fa2;
+        padding-left: 12px;
+        font-weight: 600;
+    }
+
+    img.plot {
+        width: 100%;
+        margin-top: 10px;
+        border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    }
+
+    /* subtle fade-in effect */
+    .fade {
+        animation: fadein 0.7s ease;
+    }
+
+    @keyframes fadein {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
 </head>
+
 <body>
+<div class="container fade">
+    <h1>Music Performance Analyzer</h1>
+    <p>Upload your audio to analyze pitch accuracy, tempo stability, and more.</p>
 
-<h1>Music Performance Analyzer</h1>
-<p>Upload an audio file to analyze pitch & tempo.</p>
+    <label for="audioFile" class="file-label">Choose Audio File</label>
+    <input type="file" id="audioFile" accept="audio/*">
+    <button onclick="uploadAudio()">Analyze</button>
 
-<input type="file" id="audioFile" accept="audio/*">
-<button onclick="uploadAudio()">Analyze</button>
+    <h2 style="margin-top: 30px; font-weight: 600; color: #333;">Results</h2>
+    <pre id="results"></pre>
 
-<h2>Results</h2>
-<pre id="results"></pre>
+    <h3>Pitch (Hz)</h3>
+    <img id="f0img" class="plot fade">
 
-<h3>Pitch (Hz)</h3>
-<img id="f0img" class="plot">
+    <h3>Pitch Error (Cents)</h3>
+    <img id="centsimg" class="plot fade">
 
-<h3>Pitch Error (Cents)</h3>
-<img id="centsimg" class="plot">
-
-<h3>Local Tempo (BPM)</h3>
-<img id="bpmimg" class="plot">
+    <h3>Local Tempo (BPM)</h3>
+    <img id="bpmimg" class="plot fade">
+</div>
 
 <script>
 async function uploadAudio() {
     const fileInput = document.getElementById('audioFile');
-    if (!fileInput.files.length) return alert("Choose a file first!");
+    if (!fileInput.files.length) return alert("Please choose a file.");
 
     let formData = new FormData();
     formData.append("file", fileInput.files[0]);
@@ -48,8 +148,6 @@ async function uploadAudio() {
     });
 
     const data = await res.json();
-    console.log(data);
-
     if (data.error) {
         document.getElementById("results").innerText = "Error: " + data.error;
         return;
